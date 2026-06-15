@@ -70,7 +70,8 @@ SYSTEM_PROMPT = (
     "and current seasonal conditions using your available tools.\n\n"
     "Always use your tools to look up plant-specific information before answering — "
     "don't rely on your general knowledge alone. If a plant isn't in your database, "
-    "say so clearly and offer general guidance based on what the user describes.\n\n"
+    "say so clearly, offer general guidance based on what the user describes, and do not invent exact care data. "
+    "When a lookup returns not found, use that as a cue to be helpful and cautious rather than stopping at 'I don't know.'\n\n"
     "Keep your advice practical and specific. Cite the source of your information "
     "when you have it (e.g., 'According to the care data for your monstera...')."
 )
@@ -128,4 +129,54 @@ def run_agent(user_message: str, history: list) -> str:
 
     Before writing code, complete specs/agent-loop-spec.md.
     """
-    return "🌱 Agent not yet implemented. Complete Milestone 2 to activate the Plant Advisor."
+    print(f"User message: {user_message}")
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    for user_msg, assistant_msg in history:
+        messages.append({"role": "user", "content": user_msg})
+        if assistant_msg:
+            messages.append({"role": "assistant", "content": assistant_msg})
+    
+    messages.append({"role": "user", "content": user_message})
+
+    for _ in range(MAX_TOOL_ROUNDS):
+        response = _client.chat.completions.create(
+            model=LLM_MODEL,
+            messages=messages,
+            tools=TOOL_DEFINITIONS,
+            tool_choice="auto",
+            temperature=0,
+        )
+        
+        assistant_message = response.choices[0].message
+        
+        # Condition A: No more tool calls, so return the final answer
+        if not assistant_message.tool_calls:
+            return assistant_message.content
+            
+        # Append the assistant message with tool calls BEFORE the tool results
+        messages.append(assistant_message)
+        
+        # Execute each tool call and append the result
+        for tool_call in assistant_message.tool_calls:
+            tool_name = tool_call.function.name
+            tool_args = json.loads(tool_call.function.arguments) if tool_call.function.arguments else {}
+            tool_args = tool_args or {}
+            tool_result = dispatch_tool(tool_name, tool_args)
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "content": tool_result,
+            })
+            
+    # Condition B: Max rounds reached
+    return "I'm sorry, I needed too many steps to find the answer. Please try asking again."
+            
+                
+        
+
+            
+            
+        
+        
+        

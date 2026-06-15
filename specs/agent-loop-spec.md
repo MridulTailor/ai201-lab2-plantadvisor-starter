@@ -121,9 +121,8 @@ for tool_call in assistant_message.tool_calls:
 
 *The loop should stop when: (a) the LLM returns a response with no tool calls, OR (b) the MAX_TOOL_ROUNDS limit is reached. Describe how you will detect each condition and what you will return in each case.*
 
-```
-[your answer here]
-```
+a) Detect no tool calls by checking `if not assistant_message.tool_calls:`. If true, return `assistant_message.content`.
+b) Use a `for _ in range(MAX_TOOL_ROUNDS):` loop. If the loop exits without returning, we hit the max rounds limit, and should return a fallback string like "I'm sorry, I needed too many steps...".
 
 ---
 
@@ -131,9 +130,7 @@ for tool_call in assistant_message.tool_calls:
 
 *Once the loop exits because there are no more tool calls, how do you extract the text content from the response object? What field holds the string you should return?*
 
-```
-[your answer here]
-```
+Extract the text content via `assistant_message.content`.
 
 ---
 
@@ -144,20 +141,20 @@ for tool_call in assistant_message.tool_calls:
 **Trace of a working agent turn (what tools were called and in what order):**
 
 ```
-Query: "How should I care for my calathea?"
-Round 1 tool call: [tool name, args]
-Round 2 tool call: [tool name, args] (if any)
-Final response: [brief description]
+Query: "How do I care for my pothos?"
+Round 1 tool call: lookup_plant({'plant_name': 'pothos'})
+Round 2 tool call: None
+Final response: The agent returned pothos care instructions based on the plant lookup result, then offered seasonal care as a follow-up.
 ```
 
 **What happens when you ask about a plant that isn't in the database?**
 
 ```
-[describe the behavior you observed]
+The agent calls lookup_plant, gets the "found": false response with the helpful message, and then replies to the user stating it couldn't find the specific plant but offers general plant care guidance instead.
 ```
 
 **One thing about the tool call API that surprised you:**
 
 ```
-[your answer here]
+The requirement to append the assistant's message object directly to the messages list *before* appending the tool's result.
 ```
