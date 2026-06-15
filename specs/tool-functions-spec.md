@@ -70,7 +70,10 @@ likely match for clean user input. Aliases are the broadest net, so they go last
 *Aliases are stored as a list of strings. How will you check if the normalized input matches any alias in the list? Write your approach in pseudocode or plain English.*
 
 ```
-[your answer here]
+ For each plant in `_plant_db`:
+     For each alias in `plant.get("aliases", [])`:
+         Normalize the alias with `alias.strip().lower()` and compare it to `normalized`.
+         If equal, it's a match — return that plant.
 ```
 
 ---
@@ -81,6 +84,7 @@ likely match for clean user input. Aliases are the broadest net, so they go last
 
 ```
 [your answer here]
+ "No plant found matching '<normalized>'. Searched keys, display names, and aliases (case-insensitive)."
 ```
 
 ---
@@ -91,17 +95,17 @@ likely match for clean user input. Aliases are the broadest net, so they go last
 
 **Test: does `"devil's ivy"` return the pothos entry?**
 ```
-[yes / no — if no, describe what happened]
+yes
 ```
 
 **Test: does `"SNAKE PLANT"` return the snake plant entry?**
 ```
-[yes / no — if no, describe what happened]
+yes
 ```
 
 **One edge case you discovered while implementing:**
 ```
-[your answer here]
+Empty strings or non-string inputs can crash the `.strip().lower()` calls if not explicitly validated at the beginning of the function.
 ```
 
 ---
@@ -183,12 +187,12 @@ The full season dict from `_season_data`, plus a `detected_season` boolean. Exam
 
 **Test: does calling with `season=None` return the correct season for the current month?**
 ```
-Current month: [month]
-Expected season: [season]
-Returned season: [season]
+Current month: June
+Expected season: summer
+Returned season: summer
 ```
 
 **Test: does calling with `season="winter"` return winter data regardless of the current month?**
 ```
-[yes / no]
+yes
 ```
